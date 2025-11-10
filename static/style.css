@@ -1,0 +1,114 @@
+/* 폰트 */
+@font-face {
+  font-family: 'PretendardLight';
+  src: url('./fonts/Pre-light.woff') format('woff');
+  font-weight: 400 600; 
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GangwonEduPowerLocal';
+  src: url('./fonts/gang-bold.otf') format('opentype');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendardsemibold';
+  src: url('./fonts/Pre-semibold.otf') format('opentype');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  --brand-deep: #053A85;   /* H:Room 딥블루 */
+  --brand-accent: #2DA1C6; /* : 포인트블루 */
+  --btn-blue: #145C95;     /* 버튼 색상 */
+}
+
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; background: #fff; }
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; 
+  height: 100vh;
+  padding-top: 30vh;  
+  gap: 50px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+.logo-word {
+  font-family: 'GangwonEduPowerLocal', sans-serif;
+  font-weight: 900;           
+  font-size: 52px;            
+  letter-spacing: 0.5px;
+  color: var(--brand-deep);
+  line-height: 1;
+}
+.logo-colon {
+  color: var(--brand-accent);
+}
+
+/* 버튼 */
+.primary-btn {
+  display: inline-block;
+  width: 277px;
+  height: 56px;
+  line-height: 56px;
+  text-align: center;
+  text-decoration: none;
+  background: var(--btn-blue);
+  color: #fff;
+  font-family: 'Pretendardsemibold', sans-serif;
+  font-weight: 600;           
+  font-size: 23px;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.06s ease, filter 0.2s ease;
+}
+.primary-btn:hover {
+  filter: brightness(1.05);
+}
+.primary-btn:active {
+  transform: translateY(2px);
+}
+
+
+.secondary-btn {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid #cfd8e3;
+  text-decoration: none;
+  color: var(--brand-deep);
+  font-family: 'PretendardLocal', sans-serif;
+}
+.headline {
+  font-family: 'GangwonEduPowerLocal', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--brand-deep);
+}
+
+
+@media (min-width: 480px) {
+  .logo-word { font-size: 56px; }
+  .primary-btn { width: 300px; }
+}

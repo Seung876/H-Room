@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>H:Room</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/H-Room.svg') }}">
+</head>
+<body>
+  <div class="wrap">
+
+    <!--로고 -->
+    <div class="brand">
+      <img src="{{ url_for('static', filename='images/H-Room.svg') }}" alt="로고" class="logo-icon">
+      <div class="logo-word">
+        H<span class="logo-colon">:</span>Room
+      </div>
+    </div>
+
+    <!-- 버튼 -->
+    <a class="primary-btn" href="{{ url_for('main') }}">시작하기</a>
+  </div>
+</body>
+</html>
