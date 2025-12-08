@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>H:Room – 즐겨찾기</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='images/H-Room.svg') }}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='favorite.css') }}">
+</head>
+<body>
+  <main class="app">
+
+    <!-- 상단 헤더 -->
+    <header class="top-fav">
+      <button type="button" class="btn-back" onclick="history.back()">
+        <img src="{{ url_for('static', filename='images/back.svg') }}"
+             alt="뒤로가기" class="icon-back">
+      </button>
+
+      <h1 class="page-title">즐겨찾기</h1>
+
+      <button class="top-heart" aria-label="즐겨찾기 전체">
+        <img src="{{ url_for('static', filename='images/heart.svg') }}"
+             class="top-heart-icon"
+             alt="favorite">
+      </button>
+    </header>
+
+    <section class="fav-content">
+
+      <!-- 정렬 셀렉트 -->
+      <div class="fav-sort-row">
+        <label class="fav-sort-label" for="sort-select">정렬 :</label>
+        <select id="sort-select" class="fav-sort-select">
+          <option value="status">상태우선</option>
+          <option value="name">이름순</option>
+          <option value="next">다음 수업 시간순</option>
+        </select>
+      </div>
+
+      <div class="fav-list" id="fav-list">
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const ICON_CHECK   = "{{ url_for('static', filename='images/check_s.svg') }}";
+    const ICON_CLASS   = "{{ url_for('static', filename='images/class.svg') }}";
+    const ICON_HEART   = "{{ url_for('static', filename='images/heart.svg') }}";
+    const ICON_HEART_E = "{{ url_for('static', filename='images/heart_e.svg') }}";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const FAVORITE_KEY = "hroom_favorites_v1";
+      const listEl       = document.getElementById("fav-list");
+      const sortSelect   = document.getElementById("sort-select");
+
+      function loadFavorites() {
+        try {
+          const raw = localStorage.getItem(FAVORITE_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          console.error("즐겨찾기 로드 실패", e);
+          return [];
+        }
+      }
+
+      function saveFavorites(list) {
+        try {
+          localStorage.setItem(FAVORITE_KEY, JSON.stringify(list));
+        } catch (e) {
+          console.error("즐겨찾기 저장 실패", e);
+        }
+      }
+
+      function removeFavorite(id) {
+        const list = loadFavorites().filter(room => room.id !== id);
+        saveFavorites(list);
+        return list;
+      }
+
+      function parseTimeToMinutes(t) {
+        if (!t) return Number.MAX_SAFE_INTEGER;
+        const m = t.match(/(\d{1,2}):(\d{2})/);
+        if (!m) return Number.MAX_SAFE_INTEGER;
+        const h = parseInt(m[1], 10);
+        const min = parseInt(m[2], 10);
+        if (Number.isNaN(h) || Number.isNaN(min)) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+        return h * 60 + min;
+      }
+
+      function renderFavorites(sortMode = "status") {
+        const rooms = loadFavorites();
+
+        if (!rooms || rooms.length === 0) {
+          listEl.innerHTML = `
+            <p class="fav-empty">
+              즐겨찾기한 강의실이 없습니다.
+            </p>
+          `;
+          return;
+        }
+
+        rooms.sort((a, b) => {
+          if (sortMode === "name") {
+            const na = a.name || "";
+            const nb = b.name || "";
+            return na.localeCompare(nb, "ko-KR");
+          }
+
+          if (sortMode === "next") {
+            const ta = parseTimeToMinutes(a.next);
+            const tb = parseTimeToMinutes(b.next);
+            return ta - tb;
+          }
+
+          const sa = a.status_type === "free" ? 0 : 1;
+          const sb = b.status_type === "free" ? 0 : 1;
+          if (sa !== sb) return sa - sb;
+
+          const ta = parseTimeToMinutes(a.next);
+          const tb = parseTimeToMinutes(b.next);
+          if (ta !== tb) return ta - tb;
+
+          const na = a.name || "";
+          const nb = b.name || "";
+          return na.localeCompare(nb, "ko-KR");
+        });
+
+        listEl.innerHTML = "";
+
+        rooms.forEach(room => {
+          const card = document.createElement("article");
+          card.className = "fav-card";
+          card.dataset.id = room.id;
+
+          const badgeHtml = room.rental_limited
+            ? `
+              <span class="fav-badge-warning">
+                <span class="fav-badge-icon">⚠</span>
+                <span>대여 제한 공실</span>
+              </span>
+            `
+            : "";
+
+          const noteHtml = room.note
+            ? `
+              <div class="fav-note">
+                <span class="fav-note-icon">!</span>
+                <span class="fav-note-text">${room.note}</span>
+              </div>
+            `
+            : "";
+
+          const statusIcon = room.status_type === "free" ? ICON_CHECK : ICON_CLASS;
+          const statusTextClass = room.status_type === "free"
+            ? "fav-status-text fav-status-text-free"
+            : "fav-status-text fav-status-text-busy";
+
+          card.innerHTML = `
+            <header class="fav-card-header">
+              <div class="fav-card-title">
+                <span class="fav-room-name">${room.name || ""}</span>
+                ${badgeHtml}
+              </div>
+
+              <!-- 휴지통 대신 하트 토글 버튼 -->
+              <button class="fav-heart" type="button"
+                      aria-label="즐겨찾기 해제" data-id="${room.id}">
+                <img src="${ICON_HEART}" alt="" class="fav-heart-icon">
+              </button>
+            </header>
+
+            <div class="fav-status-row">
+              <img src="${statusIcon}" alt="" class="fav-status-icon">
+              <span class="${statusTextClass}">${room.status || ""}</span>
+            </div>
+
+            <div class="fav-times">
+              <div>
+                <span class="fav-time-label">비는 시간 :</span>
+                <span class="fav-time-value">
+                  ${room.start && room.end ? `${room.start} ~ ${room.end}` : "-"}
+                </span>
+              </div>
+              <div>
+                <span class="fav-time-label">다음 수업 :</span>
+                <span class="fav-time-value">
+                  ${room.next || "-"}
+                </span>
+              </div>
+            </div>
+
+            ${noteHtml}
+          `;
+
+          listEl.appendChild(card);
+        });
+
+        bindHeartButtons();
+      }
+
+      function bindHeartButtons() {
+        document.querySelectorAll(".fav-heart").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.dataset.id;
+            const newList = removeFavorite(id);
+
+            const card = btn.closest(".fav-card");
+            if (card) card.remove();
+
+            if (!newList.length) {
+              listEl.innerHTML = `
+                <p class="fav-empty">
+                  즐겨찾기한 강의실이 없습니다.
+                </p>
+              `;
+            }
+          });
+        });
+      }
+
+      if (sortSelect) {
+        sortSelect.addEventListener("change", () => {
+          const mode = sortSelect.value || "status";
+          renderFavorites(mode);
+        });
+      }
+
+      renderFavorites("status");
+    });
+  </script>
+</body>
+</html>

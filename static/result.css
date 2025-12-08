@@ -1,0 +1,335 @@
+:root{
+  --brand-deep: #053A85;   
+  --brand-accent: #2DA1C6; 
+  --brand:#145C95;
+  --brand-dark:#003D6B;
+  --accent:#034B95;    
+  --ink:#111827;
+  --ink-sub:#6B7280;
+  --line:#E5E7EB;
+  --bg:#F5F7FA;
+  --card:#FFFFFF;
+  --shadow:0 12px 30px rgba(15,23,42,0.12);
+
+  --room-border:rgba(2,44,87,0.06); 
+  --radius-lg:16px;                
+}
+
+*{box-sizing:border-box}
+
+html,body{height:100%}
+
+body{
+  margin:0;
+  font-family:"Pretendard", sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.app{
+  max-width:420px;
+  min-height:100vh;
+  margin:0 auto;
+  background:white;
+  box-shadow:var(--shadow);
+  padding-bottom:32px;
+}
+
+.top{
+  padding:20px 20px 16px;
+}
+
+.top-inner{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  margin-bottom:18px;
+}
+
+.logo{
+  font-size:26px;
+  font-weight:800;
+  color:var(--brand-dark);
+}
+
+.top-heart{
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  width:32px;
+  height:32px;
+  border:none;
+  background:transparent;
+}
+.top-heart-icon{
+  width:20px;
+  height:20px;
+}
+
+.filter-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.filter-select{
+  flex:1;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  font-size:13px;
+  background:white;
+}
+
+.btn-primary{
+  padding:8px 14px;
+  border-radius:999px;
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:13px;
+}
+
+.ico-search{width:14px;height:14px}
+
+.content{
+  padding:0 20px 24px;
+}
+
+.result-count{
+  margin:18px 0 8px;
+  font-size:14px;
+  color:var(--ink-sub);
+}
+
+.link-count{
+  border:none;
+  background:none;
+  padding:0;
+  color:var(--accent);
+  font-weight:600;
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+.sort-row{
+  margin:8px 0 16px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.sort-label{
+  font-size:13px;
+  color:var(--ink-sub);
+}
+
+.sort-select{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+}
+
+.room-list{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.room-card{
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--room-border);
+  padding: 16px 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.40) 0%,
+    rgba(255, 255, 255, 0.60) 100%
+  );
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.room-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:8px;
+}
+
+.room-title{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.room-name{
+  font-size:18px;
+  font-weight:400;
+}
+
+.room-badge{
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#FEF3C7;
+  color:#92400E;
+  border:1px solid #FCD34D;
+}
+
+.room-heart{
+  width:28px;
+  height:28px;
+  border:none;
+  background:transparent;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+.room-heart .heart-icon{
+  width:20px;
+  height:20px;
+}
+
+.room-status{
+  display:flex;
+  gap:6px;
+  margin: 4px 0 10px;
+  align-items:center;
+}
+
+.status-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#3FBB60;
+}
+
+.status-ok-text{
+  font-family:"Pretendard";
+  font-size:12px;
+  font-weight:500;      
+  color:#3FBB60;
+  line-height:140%;
+  letter-spacing:-0.025em;
+}
+
+.room-times{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.room-times div{
+  font-family:"Pretendard";
+  font-size:12px;
+  font-weight:300;       
+  color:#000000;
+  line-height:140%;
+  letter-spacing:-0.025em;
+}
+
+.room-times strong{
+  font-weight:500;
+}
+
+.room-note{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px dashed var(--line);
+  font-size:12px;
+  color:var(--ink-sub);
+  display:flex;
+  gap:6px;
+  line-height:140%;
+}
+
+.note-icon{
+  width:16px;
+  height:16px;
+  border:1px solid #F97316;
+  color:#F97316;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:999px;
+  font-size:11px;
+}
+
+.note-text {
+  font-weight:300;
+  font-size:10px;
+}
+
+.logo-btn{
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.logo-word {
+  font-family: 'GangwonEduPower', sans-serif;
+  font-weight: 800;     
+  font-size: 27px;
+  letter-spacing: 0.3px;
+  color: var(--brand-deep);
+  line-height: 1;
+}
+
+.logo-colon {
+  color: var(--brand-accent);
+}
+
+.fav-status-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.status-busy-text{
+  font-family:"Pretendard";
+  font-size:12px;
+  font-weight:500;     
+  color:#EF4444;        
+  line-height:140%;
+  letter-spacing:-0.025em;
+}
+
+.reserve-row{
+  margin-top:6px;
+  display:flex;
+  justify-content:flex-start;  
+}
+
+.reserve-link{
+  font-size:11px;
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid rgba(3,75,149,0.2);
+  color:var(--accent);
+  text-decoration:none;
+  font-weight:500;
+  background:rgba(3,75,149,0.04);
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+.reserve-link::after{
+  content:"↗";
+  font-size:11px;
+}
+
+.reserve-link:hover{
+  background:rgba(3,75,149,0.10);
+}
+
+.rental-note {
+  margin-top: 4px;
+  color: #9CA3AF;
+}

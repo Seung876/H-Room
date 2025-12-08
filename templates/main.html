@@ -4,28 +4,85 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>H:Room – 메인</title>
+
   <link rel="icon" href="{{ url_for('static', filename='images/H-Room.svg') }}">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
   <main class="app">
+
+    <!-- 상단 헤더 -->
     <header class="header">
       <div class="header-top">
-        <div class="brand">H:Room</div>
-        <div class="heart" aria-label="즐겨찾기">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 21s-6.716-4.35-9.5-7.134C-0.5 10.866 1.5 6 6 6c2.308 0 3.692 1.154 4.5 2 0.808-.846 2.192-2 4.5-2 4.5 0 6.5 4.866 3.5 7.866C18.716 16.65 12 21 12 21z"/>
-          </svg>
+        <!-- H:Room 로고 -->
+        <div class="brand-logo">
+          <span class="brand-text">H</span><span class="brand-colon">:</span><span class="brand-text">Room</span>
         </div>
       </div>
 
+      <!-- 필터 영역 -->
       <div class="filters" role="group" aria-label="검색 필터">
-        <button class="chip" type="button">요일<span class="caret" aria-hidden="true"></span></button>
-        <button class="chip" type="button">시간<span class="caret" aria-hidden="true"></span></button>
-        <button class="chip" type="button">캠퍼스<span class="caret" aria-hidden="true"></span></button>
-        <button class="chip" type="button">건물<span class="caret" aria-hidden="true"></span></button>
+        
+        <!-- 요일 -->
+        <label class="chip chip-select">
+          <span>요일</span>
+          <span class="caret" aria-hidden="true"></span>
+          <select id="day-select" class="chip-native">
+            <option value="">전체</option>
+            <option value="mon">월요일</option>
+            <option value="tue">화요일</option>
+            <option value="wed">수요일</option>
+            <option value="thu">목요일</option>
+            <option value="fri">금요일</option>
+          </select>
+        </label>
+
+        <!-- 시간 -->
+        <label class="chip chip-select">
+          <span>시간</span>
+          <span class="caret" aria-hidden="true"></span>
+          <select id="time-select" class="chip-native">
+            <option value="">전체</option>
+            <option value="1">1교시 (09:00~09:50)</option>
+            <option value="2">2교시 (10:00~10:50)</option>
+            <option value="3">3교시 (11:00~11:50)</option>
+            <option value="4">4교시 (12:00~12:50)</option>
+            <option value="5">5교시 (13:00~13:50)</option>
+            <option value="6">6교시 (14:00~14:50)</option>
+            <option value="7">7교시 (15:00~15:50)</option>
+            <option value="8">8교시 (16:00~16:50)</option>
+            <option value="9">9교시 (17:00~17:50)</option>
+            <option value="10">10교시 (18:00~18:50)</option>
+            <option value="11">11교시 (19:00~19:50)</option>
+            <option value="12">12교시 (20:00~20:50)</option>
+          </select>
+        </label>
+
+        <!-- 캠퍼스 -->
+        <label class="chip chip-select">
+          <span>캠퍼스</span>
+          <span class="caret" aria-hidden="true"></span>
+          <select id="campus-select" class="chip-native">
+            <option value="">전체</option>
+            <option value="H1">서울</option>
+            <option value="H2" selected>글로벌</option>
+          </select>
+        </label>
+
+        <!-- 건물 -->
+        <label class="chip chip-select">
+          <span>건물</span>
+          <span class="caret" aria-hidden="true"></span>
+          <select id="building-select" class="chip-native">
+            <option value="">전체</option>
+          </select>
+        </label>
+
+        <!-- 검색 버튼 -->
         <button class="btn-search" type="button">
           <svg class="srch-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -33,86 +90,375 @@
           검색
         </button>
       </div>
+
     </header>
 
+    <!-- 메인 콘텐츠 -->
     <section>
+
+      <!-- 빠른 확인 카드 -->
       <div class="quick" aria-label="빠른 확인">
-        <div class="time">2025년 11월 03일 월요일 오후 4시</div>
-        <button class="cta" type="button">공실 바로 확인하기</button>
+        <!-- 이 부분은 JS가 채움 -->
+        <div class="time"></div>
+
+        <!-- 여기 클릭 시 /result 이동 -->
+        <button class="cta" type="button" id="btn-go-result">
+          공실 바로 확인하기
+        </button>
       </div>
 
+      <!-- 건물별 공실 현황 카드 -->
       <article class="card" aria-labelledby="card-title">
         <h2 id="card-title">건물별 공실 현황</h2>
 
-        <div class="bar" data-value="78" data-rate="70">
-          <div class="label">백년관</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">70%</div>
+        <!-- NEW: 공간 종류 토글 -->
+        <div class="view-toggle" role="group" aria-label="공간 종류 선택">
+          <button type="button" class="toggle-btn active" data-space-type="">
+            전체
+          </button>
+          <button type="button" class="toggle-btn" data-space-type="lecture">
+            강의실만
+          </button>
+          <button type="button" class="toggle-btn" data-space-type="studyroom">
+            스터디룸만
+          </button>
         </div>
-        <div class="bar" data-value="52" data-rate="35">
-          <div class="label">공과대</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">35%</div>
-        </div>
-        <div class="bar" data-value="38" data-rate="30">
-          <div class="label">자연대</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">30%</div>
-        </div>
-        <div class="bar" data-value="30" data-rate="25">
-          <div class="label">인문대</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">25%</div>
-        </div>
-        <div class="bar" data-value="45" data-rate="30">
-          <div class="label">경상대</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">30%</div>
-        </div>
-        <div class="bar" data-value="60" data-rate="30">
-          <div class="label">어문관</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">30%</div>
-        </div>
-        <div class="bar" data-value="60" data-rate="30">
-          <div class="label">교양관</div>
-          <div class="bar-track"><div class="bar-fill"></div></div>
-          <div class="val">30%</div>
-        </div>
+        <!-- /NEW -->
+
+        <!-- JS가 여기 안에 bar들을 동적으로 채워넣음 -->
+        <div id="building-bars"></div>
 
         <div class="note">
           <span class="note-dot"></span>
-          <span>현재 가장 여유로운 건물은 <strong>백년관</strong> 입니다.</span>
+          <span id="note-text">데이터를 불러오는 중입니다...</span>
         </div>
 
         <div class="stats">
-          <div class="stat"><div class="t">전체 강의실</div><div class="k">124</div></div>
-          <div class="stat"><div class="t">현재 공실</div><div class="k">83</div></div>
-          <div class="stat"><div class="t">공실률</div><div class="k">64%</div></div>
+          <div class="stat">
+            <div class="t">전체 강의실</div>
+            <div class="k" id="stat-total-rooms">-</div>
+          </div>
+          <div class="stat">
+            <div class="t">현재 공실</div>
+            <div class="k" id="stat-empty-rooms">-</div>
+          </div>
+          <div class="stat">
+            <div class="t">공실률</div>
+            <div class="k" id="stat-empty-rate">-</div>
+          </div>
         </div>
       </article>
-
-      <div class="ask">
-        <div class="ask-title">AI에게 물어보세요!</div>
-        <div class="ask-box">
-          <input class="ask-input" 
-          type="text" 
-          placeholder="오늘 오후 2시에 공학관에 비는 강의실 알려줘" 
-          />
-          <button class="ask-btn" type="button">검색</button>
-        </div>
-      </div>
 
     </section>
   </main>
 
   <script>
-    // 진행바 채우기: data-value (0~100)
-    document.querySelectorAll('.bar').forEach(el => {
-      const v = Math.max(0, Math.min(100, Number(el.dataset.value) || 0));
-      el.querySelector('.bar-fill').style.width = v + '%';
+  document.addEventListener("DOMContentLoaded", () => {
+    const campusSelect   = document.getElementById("campus-select");
+    const buildingSelect = document.getElementById("building-select");
+    const daySelect      = document.getElementById("day-select");
+    const timeSelect     = document.getElementById("time-select");
+
+    const barsContainer  = document.getElementById("building-bars");
+    const noteText       = document.getElementById("note-text");
+    const statTotal      = document.getElementById("stat-total-rooms");
+    const statEmpty      = document.getElementById("stat-empty-rooms");
+    const statRate       = document.getElementById("stat-empty-rate");
+
+    const quickTimeEl    = document.querySelector(".quick .time");
+
+    const heartBtn = document.querySelector(".heart");
+      if (heartBtn) {
+        heartBtn.addEventListener("click", () => {
+          window.location.href = "/favorite";
+        });
+      }
+
+
+    let currentSpaceType = "";
+
+    function formatNowKorean() {
+      const now = new Date();
+
+      const year  = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const date  = String(now.getDate()).padStart(2, "0");
+
+      const weekdayKo = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"][now.getDay()];
+
+      let hour = now.getHours();
+      const minute = String(now.getMinutes()).padStart(2, "0");
+      const ampm = hour >= 12 ? "오후" : "오전";
+
+      if (hour === 0) {
+        hour = 12;
+      } else if (hour > 12) {
+        hour = hour - 12;
+      }
+
+      return `${year}년 ${month}월 ${date}일 ${weekdayKo} ${ampm} ${hour}시 ${minute}분`;
+    }
+
+    function updateQuickTime() {
+      if (!quickTimeEl) return;
+      quickTimeEl.textContent = formatNowKorean();
+    }
+
+    updateQuickTime();
+    setInterval(updateQuickTime, 60 * 1000);
+
+    function getCurrentDayCode() {
+      const now = new Date();
+      const dayIdx = now.getDay();
+      const map = {
+        1: "mon",
+        2: "tue",
+        3: "wed",
+        4: "thu",
+        5: "fri"
+      };
+      return map[dayIdx] || "";
+    }
+
+    function getCurrentPeriod() {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    const minuteOfDay = h * 60 + m;
+
+    // 운영 시간: 09:00 ~ 21:00
+    if (minuteOfDay < 9 * 60 || minuteOfDay >= 21 * 60) {
+      return "";
+    }
+    const index = Math.floor((minuteOfDay - 9 * 60) / 60); 
+    const period = index + 1; 
+
+    return String(Math.max(1, Math.min(12, period)));
+  }
+
+
+    (function initDefaultFilters() {
+      const dayCode = getCurrentDayCode();
+      if (daySelect && dayCode) {
+        daySelect.value = dayCode;
+      }
+      const period = getCurrentPeriod();
+      if (timeSelect && period) {
+        timeSelect.value = period;
+      }
+    })();
+
+    function bindChipLabel(selectEl, placeholderText) {
+      if (!selectEl) return;
+      const wrapper = selectEl.closest(".chip-select");
+      if (!wrapper) return;
+
+      const labelSpan = wrapper.querySelector("span:not(.caret)");
+      if (!labelSpan) return;
+
+      function update() {
+        const value = selectEl.value;
+        if (!value) {
+          labelSpan.textContent = placeholderText;
+          return;
+        }
+
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        let text = selectedOption.textContent;
+
+        if (selectEl.id === "time-select") {
+          text = text.split(" ")[0];
+        }
+
+        labelSpan.textContent = text;
+      }
+
+      update();
+      selectEl.addEventListener("change", update);
+    }
+
+    // 1) 캠퍼스별 건물 목록 로딩
+        async function updateBuildingOptions() {
+      const campus = campusSelect.value || "H2";
+      buildingSelect.innerHTML = '<option value="">전체</option>';
+
+      try {
+        const res = await fetch(`/api/buildings?campus=${encodeURIComponent(campus)}`);
+        const buildings = await res.json();
+
+        buildings.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          buildingSelect.appendChild(opt);
+        });
+
+        const optStudy = document.createElement("option");
+        optStudy.value = "스터디룸";
+        optStudy.textContent = "스터디룸";
+        buildingSelect.appendChild(optStudy);
+
+
+      } catch (e) {
+        console.error("건물 목록 불러오기 실패", e);
+      }
+    }
+
+
+    // 2) 건물별 공실 요약 불러와서 막대 그래프 그리기
+    async function loadSummary() {
+      const campus = campusSelect.value || "H2";
+      const day    = daySelect.value;
+      const time   = timeSelect.value; // period
+
+      const params = new URLSearchParams({
+        campus,
+        day,
+        period: time,
+        space_type: currentSpaceType
+      });
+
+      try {
+        const res = await fetch(`/api/vacancy-summary?${params.toString()}`);
+        const data = await res.json();
+
+        const buildings = data.buildings || data;
+
+        if (!Array.isArray(buildings) || buildings.length === 0) {
+          barsContainer.innerHTML = "<p class='empty'>데이터가 없습니다.</p>";
+          if (noteText) noteText.textContent = "아직 집계된 데이터가 없습니다.";
+          if (statTotal) statTotal.textContent = "-";
+          if (statEmpty) statEmpty.textContent = "-";
+          if (statRate)  statRate.textContent  = "-";
+          return;
+        }
+
+        barsContainer.innerHTML = "";
+        let best = buildings[0];
+
+        buildings.forEach(b => {
+          if (b.empty_rate > best.empty_rate) best = b;
+
+          const bar = document.createElement("div");
+          bar.className = "bar";
+          bar.dataset.value = b.empty_rate;
+
+          bar.innerHTML = `
+            <div class="label">${b.building_name}</div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <div class="val">${b.empty_rate}%</div>
+          `;
+          barsContainer.appendChild(bar);
+        });
+
+        document.querySelectorAll(".bar").forEach(el => {
+          const v = Math.max(0, Math.min(100, Number(el.dataset.value) || 0));
+          const fill = el.querySelector(".bar-fill");
+          if (fill) fill.style.width = v + "%";
+        });
+
+        if (noteText && best) {
+          let typeLabel = "강의실 + 스터디룸";
+          if (currentSpaceType === "lecture") {
+            typeLabel = "강의실";
+          } else if (currentSpaceType === "studyroom") {
+            typeLabel = "스터디룸";
+          }
+          noteText.innerHTML =
+            `현재 선택된 기준(${typeLabel})에서 <br/> 가장 여유로운 건물은 <strong>${best.building_name}</strong> 입니다.`;
+        }
+
+        if ("total_rooms" in data) {
+          if (statTotal) statTotal.textContent = data.total_rooms;
+          if (statEmpty) statEmpty.textContent = data.empty_rooms;
+          if (statRate)  statRate.textContent  = data.empty_rate + "%";
+        }
+      } catch (e) {
+        console.error("공실 요약 불러오기 실패", e);
+      }
+    }
+
+    function goSearchByFilter() {
+      const params = new URLSearchParams();
+      const dayVal      = daySelect.value;
+      const timeVal     = timeSelect.value;
+      const campusVal   = campusSelect.value;
+      const buildingVal = buildingSelect.value;
+
+      if (dayVal)      params.set("day", dayVal);
+      if (timeVal)     params.set("time", timeVal);   
+      if (campusVal)   params.set("campus", campusVal);
+      if (buildingVal) params.set("building", buildingVal);
+
+      const qs = params.toString();
+      window.location.href = qs ? `/result?${qs}` : "/result";
+    }
+
+    function goSearchByNow() {
+    const params = new URLSearchParams();
+
+    const dayNow    = getCurrentDayCode();  
+    const periodNow = getCurrentPeriod();    
+
+    const campusVal   = campusSelect.value;
+    const buildingVal = buildingSelect.value;
+
+    if (!dayNow || !periodNow) {
+      alert("지금은 강의실 운영 시간이 아닙니다. (09:00~21:00 사이에만 조회됩니다)");
+      return;
+    }
+
+    params.set("day", dayNow);
+    params.set("time", periodNow);   
+    if (campusVal)   params.set("campus", campusVal);
+    if (buildingVal) params.set("building", buildingVal);
+
+    const qs = params.toString();
+    window.location.href = `/result?${qs}`;
+  }
+
+    const searchBtn = document.querySelector(".btn-search");
+    const quickBtn  = document.getElementById("btn-go-result");
+
+    if (searchBtn) {
+      searchBtn.addEventListener("click", goSearchByFilter);
+    }
+    if (quickBtn) {
+      quickBtn.addEventListener("click", goSearchByNow);
+    }
+
+    const toggleButtons = document.querySelectorAll(".toggle-btn");
+    toggleButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-space-type") || "";
+        currentSpaceType = type;
+
+        toggleButtons.forEach(b => {
+          b.classList.toggle("active", b === btn);
+        });
+
+        loadSummary();
+      });
     });
 
-  </script>
+    if (campusSelect && buildingSelect) {
+      campusSelect.addEventListener("change", () => {
+        updateBuildingOptions();
+        loadSummary();
+      });
+    }
+    if (daySelect)  daySelect.addEventListener("change", loadSummary);
+    if (timeSelect) timeSelect.addEventListener("change", loadSummary);
+
+    bindChipLabel(daySelect, "요일");
+    bindChipLabel(timeSelect, "시간");
+    bindChipLabel(campusSelect, "캠퍼스");
+    bindChipLabel(buildingSelect, "건물");
+
+    updateBuildingOptions();
+    loadSummary();
+  });
+</script>
+
 </body>
 </html>

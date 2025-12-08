@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>H:Room – 검색 결과</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='images/H-Room.svg') }}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='result.css') }}">
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="top-inner">
+
+        <button type="button" class="logo-btn" id="btn-logo-main">
+          <div class="logo-word">H<span class="logo-colon">:</span>Room</div>
+        </button>
+
+      </div>
+
+      <div class="filter-row" role="group" aria-label="검색 필터">
+        <select id="day-select" class="filter-select">
+          <option value="">전체</option>
+          <option value="mon" {% if day == 'mon' %}selected{% endif %}>월요일</option>
+          <option value="tue" {% if day == 'tue' %}selected{% endif %}>화요일</option>
+          <option value="wed" {% if day == 'wed' %}selected{% endif %}>수요일</option>
+          <option value="thu" {% if day == 'thu' %}selected{% endif %}>목요일</option>
+          <option value="fri" {% if day == 'fri' %}selected{% endif %}>금요일</option>
+        </select>
+
+        <select id="time-select" class="filter-select">
+          <option value="">전체</option>
+          <option value="1" {% if time == '1' %}selected{% endif %}>1교시 (09:00~09:50)</option>
+          <option value="2" {% if time == '2' %}selected{% endif %}>2교시 (10:00~10:50)</option>
+          <option value="3" {% if time == '3' %}selected{% endif %}>3교시 (11:00~11:50)</option>
+          <option value="4" {% if time == '4' %}selected{% endif %}>4교시 (12:00~12:50)</option>
+          <option value="5" {% if time == '5' %}selected{% endif %}>5교시 (13:00~13:50)</option>
+          <option value="6" {% if time == '6' %}selected{% endif %}>6교시 (14:00~14:50)</option>
+          <option value="7" {% if time == '7' %}selected{% endif %}>7교시 (15:00~15:50)</option>
+          <option value="8" {% if time == '8' %}selected{% endif %}>8교시 (16:00~16:50)</option>
+          <option value="9" {% if time == '9' %}selected{% endif %}>9교시 (17:00~17:50)</option>
+          <option value="10" {% if time == '10' %}selected{% endif %}>10교시 (18:00~18:50)</option>
+          <option value="11" {% if time == '11' %}selected{% endif %}>11교시 (19:00~19:50)</option>
+          <option value="12" {% if time == '12' %}selected{% endif %}>12교시 (20:00~20:50)</option>
+        </select>
+
+        <select id="campus-select" class="filter-select">
+          <option value="">전체</option>
+          <option value="H2" {% if campus == 'H2' or not campus %}selected{% endif %}>글로벌</option>
+          <option value="H1" {% if campus == 'H1' %}selected{% endif %}>서울</option>
+        </select>
+
+        <select id="building-select" class="filter-select">
+          <option value="">전체</option>
+        </select>
+
+        <button class="btn-primary" type="button" id="btn-search">
+          검색
+        </button>
+      </div>
+    </header>
+
+    <section class="content">
+
+      <p class="result-count">
+        총
+        <button class="link-count" type="button">
+          {{ count or 0 }}개
+        </button>
+        의 강의실이 검색되었습니다.
+      </p>
+
+      <div class="sort-row">
+        <span class="sort-label">정렬 :</span>
+
+        <select class="sort-select" id="sort-select">
+          <option value="status">상태우선</option>
+          <option value="name">이름순</option>
+          <option value="next">다음 수업 시간순</option>
+        </select>
+      </div>
+
+      <div class="room-list">
+        {% if rooms and rooms|length > 0 %}
+          {% for room in rooms %}
+
+          <article class="room-card"
+            data-campus="{{ campus }}"
+            data-room="{{ room.room_number }}"
+            data-building="{{ room.building_name }}"
+            data-status="{{ room.status_text }}"
+            data-name="{{ room.room_name }}"
+            data-free="{{ 1 if room.is_free else 0 }}"
+            data-next-time="{{ room.next_class_minutes or '' }}"
+            data-free-range="{{ room.free_range_text }}"
+            data-next-text="{{ room.next_class_text }}"
+            data-rental-limited="{{ 1 if room.requires_rental else 0 }}"
+            data-note="{{ room.note_text or '' }}"
+            onclick="location.href='/detail?campus={{ campus }}&building={{ room.building_name }}&room={{ room.room_number }}&day={{ day }}'">
+
+
+            <div class="room-main">
+              <div class="room-header">
+                <div class="room-title">
+                  <span class="room-name">{{ room.room_name }}</span>
+                  {% if room.badge_text %}
+                    <span class="room-badge">{{ room.badge_text }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="room-status">
+                <img
+                  src="{{ url_for('static', filename='images/check_s.svg') }}"
+                  alt=""
+                  class="fav-status-icon"
+                >
+                <span class="status-text {% if room.is_free %}status-ok-text{% else %}status-busy-text{% endif %}">
+                  {{ room.status_text }}
+                </span>
+              </div>
+
+              {# 예약 URL 이 있는 경우에만 예약 버튼 노출 (스터디룸 + 대여 필요 강의실 공통) #}
+              {% if room.reserve_url %}
+                <div class="reserve-row">
+                  <a class="reserve-link"
+                     href="{{ room.reserve_url }}"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    예약하러가기
+                  </a>
+                </div>
+              {% endif %}
+
+              <div class="room-times">
+                {% if room.free_range_text %}
+                  <div>비는 시간 : {{ room.free_range_text }}</div>
+                {% endif %}
+                {% if room.next_class_text %}
+                  <div>다음 수업 : {{ room.next_class_text }}</div>
+                {% endif %}
+              </div>
+
+              {% if not room.is_free %}
+              <div class="room-note">
+                <span class="note-icon">!</span>
+                <span class="note-text">
+                  현재 선택한 시간에는 수업이 진행 중인 강의실입니다.
+                </span>
+              </div>
+              {% endif %}
+
+              {# ★ 대여 필요 강의실 안내 문구 #}
+              {% if room.note_text %}
+                <div class="room-note rental-note">
+                  <span class="note-icon">!</span>
+                  <span class="note-text">
+                    {{ room.note_text }}
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+          {% endfor %}
+        {% else %}
+          <p>조건에 맞는 강의실이 없습니다.</p>
+        {% endif %}
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const MAIN_URL = "{{ url_for('main') }}";
+
+    const logoBtn = document.getElementById("btn-logo-main");
+
+    if (logoBtn) {
+      logoBtn.addEventListener("click", () => {
+        window.location.href = MAIN_URL;
+      });
+    }
+
+    const campusSelect   = document.getElementById("campus-select");
+    const buildingSelect = document.getElementById("building-select");
+
+    const initialBuilding = "{{ building or '' }}";
+    const initialDay      = "{{ day or '' }}";
+    const initialTime     = "{{ time or '' }}";
+    let firstLoad = true;
+
+    async function updateBuildingOptions() {
+      if (!campusSelect || !buildingSelect) return;
+
+      const campus = campusSelect.value || "H2";
+
+      buildingSelect.innerHTML = '<option value="">전체</option>';
+
+      try {
+        const res = await fetch(`/api/buildings?campus=${encodeURIComponent(campus)}`);
+        const buildings = await res.json();
+
+        buildings.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          buildingSelect.appendChild(opt);
+        });
+
+        const optStudy = document.createElement("option");
+        optStudy.value = "스터디룸";
+        optStudy.textContent = "스터디룸";
+        buildingSelect.appendChild(optStudy);
+
+        if (firstLoad && initialBuilding) {
+          buildingSelect.value = initialBuilding;
+        }
+      } catch (e) {
+        console.error("건물 목록 불러오기 실패", e);
+      } finally {
+        firstLoad = false;
+      }
+    }
+
+    if (campusSelect && buildingSelect) {
+      campusSelect.addEventListener("change", updateBuildingOptions);
+      updateBuildingOptions();
+    }
+
+    const daySelect  = document.getElementById("day-select");
+    const timeSelect = document.getElementById("time-select");
+
+    function getCurrentDayCode() {
+      const now = new Date();
+      const idx = now.getDay();
+      const map = { 1: "mon", 2: "tue", 3: "wed", 4: "thu", 5: "fri" };
+      return map[idx] || "";
+    }
+
+    function getCurrentPeriod() {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const minuteOfDay = h * 60 + m;
+
+      const ranges = [
+        [9 * 60,  9 * 60 + 50],
+        [10 * 60, 10 * 60 + 50],
+        [11 * 60, 11 * 60 + 50],
+        [12 * 60, 12 * 60 + 50],
+        [13 * 60, 13 * 60 + 50],
+        [14 * 60, 14 * 60 + 50],
+        [15 * 60, 15 * 60 + 50],
+        [16 * 60, 16 * 60 + 50],
+        [17 * 60, 17 * 60 + 50],
+        [18 * 60, 18 * 60 + 50],
+        [19 * 60, 19 * 60 + 50],
+        [20 * 60, 20 * 60 + 50],
+      ];
+
+      for (let i = 0; i < ranges.length; i++) {
+        const [start, end] = ranges[i];
+        if (minuteOfDay >= start && minuteOfDay < end) {
+          return String(i + 1);
+        }
+      }
+      return "";
+    }
+
+    (function initDefaultFilters() {
+      if (daySelect && !initialDay) {
+        const d = getCurrentDayCode();
+        if (d) daySelect.value = d;
+      }
+      if (timeSelect && !initialTime) {
+        const p = getCurrentPeriod();
+        if (p) timeSelect.value = p;
+      }
+    })();
+
+    const btnSearch = document.getElementById("btn-search");
+
+    if (btnSearch) {
+      btnSearch.addEventListener("click", () => {
+        const day      = daySelect.value;
+        const time     = timeSelect.value;
+        const campus   = campusSelect.value;
+        const building = buildingSelect.value;
+
+        const params = new URLSearchParams();
+        if (day)      params.append("day", day);
+        if (time)     params.append("time", time);
+        if (campus)   params.append("campus", campus);
+        if (building) params.append("building", building);
+
+        const qs = params.toString();
+        const url = qs ? `/result?${qs}` : "/result";
+        window.location.href = url;
+      });
+    }
+
+    const sortSelect = document.getElementById("sort-select");
+    const roomList   = document.querySelector(".room-list");
+
+    function parseNextTimeFromCard(card) {
+      const attr = card.dataset.nextTime;
+      if (attr) {
+        const n = parseInt(attr, 10);
+        if (!Number.isNaN(n)) return n;
+      }
+      const nextDiv = card.querySelector(".room-times div:nth-child(2)");
+      if (!nextDiv) return Number.MAX_SAFE_INTEGER;
+      const text = nextDiv.textContent || "";
+      const m = text.match(/(\d{1,2}):(\d{2})/);
+      if (!m) return Number.MAX_SAFE_INTEGER;
+      const h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      return h * 60 + min;
+    }
+
+    function applySort() {
+      if (!sortSelect || !roomList) return;
+      const mode = sortSelect.value;
+      const cards = Array.from(roomList.querySelectorAll(".room-card"));
+
+      cards.sort((a, b) => {
+        if (mode === "name") {
+          const na = a.dataset.name || "";
+          const nb = b.dataset.name || "";
+          return na.localeCompare(nb, "ko-KR");
+        }
+        if (mode === "next") {
+          const ta = parseNextTimeFromCard(a);
+          const tb = parseNextTimeFromCard(b);
+          return ta - tb;
+        }
+
+        const fa = a.dataset.free === "1" ? 0 : 1;
+        const fb = b.dataset.free === "1" ? 0 : 1;
+        if (fa !== fb) return fa - fb;
+
+        const ta = parseNextTimeFromCard(a);
+        const tb = parseNextTimeFromCard(b);
+        if (ta !== tb) return ta - tb;
+
+        const na = a.dataset.name || "";
+        const nb = b.dataset.name || "";
+        return na.localeCompare(nb, "ko-KR");
+      });
+
+      cards.forEach(card => roomList.appendChild(card));
+    }
+
+    if (sortSelect) {
+      sortSelect.addEventListener("change", applySort);
+      applySort();
+    }
+
+  });
+  </script>
+
+</body>
+</html>

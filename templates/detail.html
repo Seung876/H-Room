@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>H:Room – 강의실 상세 정보</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='images/H-Room.svg') }}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='detail.css') }}">
+</head>
+<body>
+  <main class="app">
+    <header class="top-detail">
+      <button type="button" class="btn-back" onclick="history.back()">
+        <img src="{{ url_for('static', filename='images/back.svg') }}"
+             alt="뒤로가기" class="icon-back">
+      </button>
+
+      <h1 class="page-title">강의실 상세 정보</h1>
+    </header>
+
+    <section class="detail-content">
+
+      <!-- 메인 상세 카드 -->
+      <article class="room-detail-card">
+        <!-- 카드 상단 -->
+        <header class="detail-header">
+          <!-- 첫 줄 : 호실 + 층 + -->
+          <div class="detail-room-top">
+            <div class="detail-room-name-line">
+              <span class="detail-room-name">{{ room.name }}</span>
+              {% if room.floor %}
+                <span class="detail-room-floor">{{ room.floor }}</span>
+              {% endif %}
+            </div>
+
+            <div class="detail-room-sub">
+              {% if room.rental_limited %}
+                <span class="badge-warning">대여 제한 공실</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- 둘째 줄 : 초록 상태 박스 -->
+          <div class="detail-status-pill">
+            <img src="{{ url_for('static', filename='images/check.svg') }}"
+                 alt=""
+                 class="icon-check">
+            <span>{{ room.status|safe }}</span>
+          </div>
+        </header>
+
+        <!-- 시간표 리스트 -->
+        <section class="time-table">
+          {% for row in timetable %}
+          <div class="time-row {% if row.is_free %}time-row-free{% endif %}">
+            <div class="time-col-left">
+              {{ row.period }}교시 {{ row.start }} ~ {{ row.end }}
+            </div>
+            <div class="time-col-right">
+              {% if row.is_free %}
+                <img src="{{ url_for('static', filename='images/check.svg') }}"
+                     alt=""
+                     class="icon-check-small">
+                <span class="text-free">공실</span>
+              {% else %}
+                {{ row.title }}
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </section>
+
+        <!-- 안내 문구 -->
+        {% if notice_text %}
+        <div class="detail-notice">
+          <div class="detail-notice-icon">!</div>
+          <p class="detail-notice-text">
+            {{ notice_text }}
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- 비는 시간 / 다음 수업 -->
+        <div class="detail-summary">
+          <div class="summary-row">
+            <span class="summary-label">비는 시간 :</span>
+            <span class="summary-value">
+              {{ free_time_text }}
+            </span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">다음 수업 :</span>
+            <span class="summary-value">
+              {{ room.next_class_time }}
+              {% if room.next_class_name %}
+                {{ room.next_class_name }}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 같은 층 공실 추천 -->
+      {% if recommendations %}
+      <section class="recommend-section">
+        <h2 class="recommend-title">같은 층 공실 추천</h2>
+
+        <div class="recommend-list">
+          {% for rec in recommendations %}
+          <article class="recommend-card"
+                   data-campus="{{ rec.campus }}"
+                   data-building="{{ rec.building }}"
+                   data-room="{{ rec.room }}">
+            <div class="recommend-info">
+              <div class="recommend-room-name">{{ rec.name }}</div>
+              <div class="recommend-free-time">
+                비는 시간 : {{ rec.free_start }} ~ {{ rec.free_end }}
+              </div>
+            </div>
+            <button class="btn-view" type="button">
+              바로 보기
+            </button>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </section>
+  </main>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const currentDay = "{{ day or '' }}";   // mon/tue/...
+
+    document.querySelectorAll(".recommend-card .btn-view").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const card = btn.closest(".recommend-card");
+        if (!card) return;
+
+        const campus   = card.dataset.campus || "";
+        const building = card.dataset.building || "";
+        const room     = card.dataset.room || "";
+
+        const params = new URLSearchParams();
+        if (campus)   params.set("campus", campus);
+        if (building) params.set("building", building);
+        if (room)     params.set("room", room);
+        if (currentDay) params.set("day", currentDay);
+
+        const qs = params.toString();
+        window.location.href = qs ? "/detail?" + qs : "/detail";
+      });
+    });
+  });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+[
+  {
+    "domain": "rs.hufs.ac.kr",
+    "httpOnly": true,
+    "name": "JSESSIONID",
+    "path": "/",
+    "sameSite": "Lax",
+    "secure": true,
+    "value": "05BEF246DF5CEB259562CB181F29A75F"
+  }
+]
