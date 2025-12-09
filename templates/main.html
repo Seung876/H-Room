@@ -98,10 +98,7 @@
 
       <!-- 빠른 확인 카드 -->
       <div class="quick" aria-label="빠른 확인">
-        <!-- 이 부분은 JS가 채움 -->
         <div class="time"></div>
-
-        <!-- 여기 클릭 시 /result 이동 -->
         <button class="cta" type="button" id="btn-go-result">
           공실 바로 확인하기
         </button>
@@ -111,7 +108,7 @@
       <article class="card" aria-labelledby="card-title">
         <h2 id="card-title">건물별 공실 현황</h2>
 
-        <!-- NEW: 공간 종류 토글 -->
+        <!-- 공간 종류 토글 -->
         <div class="view-toggle" role="group" aria-label="공간 종류 선택">
           <button type="button" class="toggle-btn active" data-space-type="">
             전체
@@ -123,7 +120,6 @@
             스터디룸만
           </button>
         </div>
-        <!-- /NEW -->
 
         <!-- JS가 여기 안에 bar들을 동적으로 채워넣음 -->
         <div id="building-bars"></div>
@@ -149,7 +145,40 @@
         </div>
       </article>
 
+      <!-- 공지사항 카드 (DB 연동) -->
+      <!-- 공지사항 카드 -->
+<section class="notice-card">
+  <h2>공지사항 참고</h2>
+
+  {% if notices and notices|length > 0 %}
+    {% set n = notices[0] %}
+    <div class="notice-main">
+      <!-- 카테고리 태그 (예: 강의실 / 대관 / 사용중지 ...) -->
+      {% if n.keyword %}
+        <div class="notice-pill">{{ n.keyword }}</div>
+      {% endif %}
+
+      <!-- 제목 (클릭 시 원문으로 이동) -->
+      <a href="{{ n.url }}" target="_blank" class="notice-title-link">
+        {{ n.title }}
+      </a>
+
+      <!-- 장소 + 날짜를 작게 정리 -->
+      <div class="notice-meta">
+        {% if n.place_text %}
+          <span class="notice-meta-place">{{ n.place_text }}</span>
+        {% endif %}
+        {% if n.date %}
+          <span class="notice-meta-dot">·</span>
+          <span class="notice-meta-date">{{ n.date }}</span>
+        {% endif %}
+      </div>
+        </div>
+      {% else %}
+        <p class="notice-empty">현재 표시할 공지사항이 없습니다.</p>
+      {% endif %}
     </section>
+
   </main>
 
   <script>
@@ -168,34 +197,28 @@
     const quickTimeEl    = document.querySelector(".quick .time");
 
     const heartBtn = document.querySelector(".heart");
-      if (heartBtn) {
-        heartBtn.addEventListener("click", () => {
-          window.location.href = "/favorite";
-        });
-      }
-
+    if (heartBtn) {
+      heartBtn.addEventListener("click", () => {
+        window.location.href = "/favorite";
+      });
+    }
 
     let currentSpaceType = "";
 
     function formatNowKorean() {
       const now = new Date();
-
       const year  = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const date  = String(now.getDate()).padStart(2, "0");
-
       const weekdayKo = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"][now.getDay()];
-
       let hour = now.getHours();
       const minute = String(now.getMinutes()).padStart(2, "0");
       const ampm = hour >= 12 ? "오후" : "오전";
-
       if (hour === 0) {
         hour = 12;
       } else if (hour > 12) {
         hour = hour - 12;
       }
-
       return `${year}년 ${month}월 ${date}일 ${weekdayKo} ${ampm} ${hour}시 ${minute}분`;
     }
 
@@ -211,48 +234,35 @@
       const now = new Date();
       const dayIdx = now.getDay();
       const map = {
-        1: "mon",
-        2: "tue",
-        3: "wed",
-        4: "thu",
-        5: "fri"
+        1: "mon", 2: "tue", 3: "wed", 4: "thu", 5: "fri"
       };
       return map[dayIdx] || "";
     }
 
     function getCurrentPeriod() {
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMinutes();
-    const minuteOfDay = h * 60 + m;
-
-    // 운영 시간: 09:00 ~ 21:00
-    if (minuteOfDay < 9 * 60 || minuteOfDay >= 21 * 60) {
-      return "";
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const minuteOfDay = h * 60 + m;
+      if (minuteOfDay < 9 * 60 || minuteOfDay >= 21 * 60) {
+        return "";
+      }
+      const index = Math.floor((minuteOfDay - 9 * 60) / 60);
+      const period = index + 1;
+      return String(Math.max(1, Math.min(12, period)));
     }
-    const index = Math.floor((minuteOfDay - 9 * 60) / 60); 
-    const period = index + 1; 
-
-    return String(Math.max(1, Math.min(12, period)));
-  }
-
 
     (function initDefaultFilters() {
       const dayCode = getCurrentDayCode();
-      if (daySelect && dayCode) {
-        daySelect.value = dayCode;
-      }
+      if (daySelect && dayCode) daySelect.value = dayCode;
       const period = getCurrentPeriod();
-      if (timeSelect && period) {
-        timeSelect.value = period;
-      }
+      if (timeSelect && period) timeSelect.value = period;
     })();
 
     function bindChipLabel(selectEl, placeholderText) {
       if (!selectEl) return;
       const wrapper = selectEl.closest(".chip-select");
       if (!wrapper) return;
-
       const labelSpan = wrapper.querySelector("span:not(.caret)");
       if (!labelSpan) return;
 
@@ -262,55 +272,42 @@
           labelSpan.textContent = placeholderText;
           return;
         }
-
         const selectedOption = selectEl.options[selectEl.selectedIndex];
         let text = selectedOption.textContent;
-
         if (selectEl.id === "time-select") {
           text = text.split(" ")[0];
         }
-
         labelSpan.textContent = text;
       }
-
       update();
       selectEl.addEventListener("change", update);
     }
 
-    // 1) 캠퍼스별 건물 목록 로딩
-        async function updateBuildingOptions() {
+    async function updateBuildingOptions() {
       const campus = campusSelect.value || "H2";
       buildingSelect.innerHTML = '<option value="">전체</option>';
-
       try {
         const res = await fetch(`/api/buildings?campus=${encodeURIComponent(campus)}`);
         const buildings = await res.json();
-
         buildings.forEach(name => {
           const opt = document.createElement("option");
           opt.value = name;
           opt.textContent = name;
           buildingSelect.appendChild(opt);
         });
-
         const optStudy = document.createElement("option");
         optStudy.value = "스터디룸";
         optStudy.textContent = "스터디룸";
         buildingSelect.appendChild(optStudy);
-
-
       } catch (e) {
         console.error("건물 목록 불러오기 실패", e);
       }
     }
 
-
-    // 2) 건물별 공실 요약 불러와서 막대 그래프 그리기
     async function loadSummary() {
       const campus = campusSelect.value || "H2";
       const day    = daySelect.value;
-      const time   = timeSelect.value; // period
-
+      const time   = timeSelect.value;
       const params = new URLSearchParams({
         campus,
         day,
@@ -321,7 +318,6 @@
       try {
         const res = await fetch(`/api/vacancy-summary?${params.toString()}`);
         const data = await res.json();
-
         const buildings = data.buildings || data;
 
         if (!Array.isArray(buildings) || buildings.length === 0) {
@@ -338,11 +334,9 @@
 
         buildings.forEach(b => {
           if (b.empty_rate > best.empty_rate) best = b;
-
           const bar = document.createElement("div");
           bar.className = "bar";
           bar.dataset.value = b.empty_rate;
-
           bar.innerHTML = `
             <div class="label">${b.building_name}</div>
             <div class="bar-track"><div class="bar-fill"></div></div>
@@ -359,11 +353,8 @@
 
         if (noteText && best) {
           let typeLabel = "강의실 + 스터디룸";
-          if (currentSpaceType === "lecture") {
-            typeLabel = "강의실";
-          } else if (currentSpaceType === "studyroom") {
-            typeLabel = "스터디룸";
-          }
+          if (currentSpaceType === "lecture") typeLabel = "강의실";
+          else if (currentSpaceType === "studyroom") typeLabel = "스터디룸";
           noteText.innerHTML =
             `현재 선택된 기준(${typeLabel})에서 <br/> 가장 여유로운 건물은 <strong>${best.building_name}</strong> 입니다.`;
         }
@@ -386,7 +377,7 @@
       const buildingVal = buildingSelect.value;
 
       if (dayVal)      params.set("day", dayVal);
-      if (timeVal)     params.set("time", timeVal);   
+      if (timeVal)     params.set("time", timeVal);
       if (campusVal)   params.set("campus", campusVal);
       if (buildingVal) params.set("building", buildingVal);
 
@@ -395,48 +386,39 @@
     }
 
     function goSearchByNow() {
-    const params = new URLSearchParams();
+      const params = new URLSearchParams();
+      const dayNow    = getCurrentDayCode();
+      const periodNow = getCurrentPeriod();
+      const campusVal   = campusSelect.value;
+      const buildingVal = buildingSelect.value;
 
-    const dayNow    = getCurrentDayCode();  
-    const periodNow = getCurrentPeriod();    
+      if (!dayNow || !periodNow) {
+        alert("지금은 강의실 운영 시간이 아닙니다. (09:00~21:00 사이에만 조회됩니다)");
+        return;
+      }
 
-    const campusVal   = campusSelect.value;
-    const buildingVal = buildingSelect.value;
+      params.set("day", dayNow);
+      params.set("time", periodNow);
+      if (campusVal)   params.set("campus", campusVal);
+      if (buildingVal) params.set("building", buildingVal);
 
-    if (!dayNow || !periodNow) {
-      alert("지금은 강의실 운영 시간이 아닙니다. (09:00~21:00 사이에만 조회됩니다)");
-      return;
+      const qs = params.toString();
+      window.location.href = `/result?${qs}`;
     }
-
-    params.set("day", dayNow);
-    params.set("time", periodNow);   
-    if (campusVal)   params.set("campus", campusVal);
-    if (buildingVal) params.set("building", buildingVal);
-
-    const qs = params.toString();
-    window.location.href = `/result?${qs}`;
-  }
 
     const searchBtn = document.querySelector(".btn-search");
     const quickBtn  = document.getElementById("btn-go-result");
-
-    if (searchBtn) {
-      searchBtn.addEventListener("click", goSearchByFilter);
-    }
-    if (quickBtn) {
-      quickBtn.addEventListener("click", goSearchByNow);
-    }
+    if (searchBtn) searchBtn.addEventListener("click", goSearchByFilter);
+    if (quickBtn)  quickBtn.addEventListener("click", goSearchByNow);
 
     const toggleButtons = document.querySelectorAll(".toggle-btn");
     toggleButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         const type = btn.getAttribute("data-space-type") || "";
         currentSpaceType = type;
-
         toggleButtons.forEach(b => {
           b.classList.toggle("active", b === btn);
         });
-
         loadSummary();
       });
     });
@@ -458,7 +440,7 @@
     updateBuildingOptions();
     loadSummary();
   });
-</script>
+  </script>
 
 </body>
 </html>

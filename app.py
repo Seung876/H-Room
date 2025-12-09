@@ -5,14 +5,14 @@ import threading
 import time
 import os
 from datetime import datetime
-from hufs_studyroom import update_studyroom_all  # 스터디룸 크롤러
+from hufs_studyroom import update_studyroom_all 
 import json
 
 app = Flask(__name__)
-app.secret_key = "hroom-dev-secret"  # 아무 문자열이나 OK
+app.secret_key = "hroom-dev-secret"  
 
 BUILDING_ALIAS = {
-    "어문관": "어문학관",      
+    "어문관": "어문학관",
     "본관(백년관)": "백년관",
 }
 
@@ -127,7 +127,7 @@ def get_room_schedule(cur, campus, building_std, room_number):
             continue
 
         for block in blocks:
-            day = block.get("day")       # "월", "화", ...
+            day = block.get("day")       
             periods = block.get("periods", [])
             if not day:
                 continue
@@ -149,8 +149,6 @@ def get_room_schedule(cur, campus, building_std, room_number):
         schedule_by_day[d] = sorted(schedule_by_day[d])
 
     return schedule_by_day
-
-
 
 
 def compute_free_info(schedule_by_day, day_kr, period):
@@ -210,6 +208,48 @@ def get_rental_db():
     return conn
 
 
+# 공지사항 DB
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_notice_db():
+    db_path = os.path.join(BASE_DIR, "hufs_notices.db")
+    print("[get_notice_db] 사용 중인 DB 파일:", db_path)  # ← 로그 찍기
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+
+def fetch_notices(limit=5):
+    conn = get_notice_db()
+    cur = conn.cursor()
+
+    # 실제 테이블/컬럼 이름에 맞게 수정해서 사용하세요
+    cur.execute(
+        """
+        SELECT id, title, url, place_text, date
+        FROM notices
+        ORDER BY date DESC
+        LIMIT ?
+        """,
+        (limit,)
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    # Jinja에서 쓰기 편하게 dict로 변환
+    notices = []
+    for r in rows:
+        notices.append({
+            "id":         r["id"],
+            "title":      r["title"],
+            "url":        r["url"],
+            "place_text": r["place_text"],
+            "date":       r["date"],
+        })
+    return notices
+
 
 # ------------------------
 #  스터디룸 자동 갱신 스레드 (30초 기준)
@@ -247,12 +287,39 @@ def index():
 # ------------------------
 @app.route("/main")
 def main():
-    return render_template("main.html")
+    conn = get_notice_db()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            SELECT id, title, url, date, place_text, keyword
+            FROM notices
+            WHERE id = 1
+            LIMIT 1
+            """
+        )
+        rows = cur.fetchall()
+        print("[/main] notices 행 개수:", len(rows))
+        notices = [
+            {
+                "id":         r["id"],
+                "title":      r["title"],
+                "url":        r["url"],
+                "date":       r["date"],
+                "place_text": r["place_text"],
+            }
+            for r in rows
+        ]
+        print("[/main] notices count =", len(notices))
+    except sqlite3.Error as e:
+        print("[/main] notice 조회 에러:", e)
+        notices = []
+    finally:
+        conn.close()
+
+    return render_template("main.html", notices=notices)
 
 
-# ------------------------
-#  Problem Canvas 페이지
-# ------------------------
 @app.route("/canvas")
 def canvas_page():
     return render_template("canvas.html")
@@ -598,7 +665,6 @@ def api_vacancy_summary():
     )
 
 
-
 # ------------------------
 #  검색 결과 페이지
 # ------------------------
@@ -801,11 +867,9 @@ def result():
                 "floor":           floor,
                 "is_studyroom":    False,
                 "capacity":        None,
-                "reserve_url":     None,              # 지금은 링크 안씀
+                "reserve_url":     None,             
                 "note_text":       note_text,
                 "requires_rental": is_rental_target,
-                # 디버그용 필드(필요 없으면 빼도 됨)
-                # "debug_rental":    is_rental_target,
             }
 
             # 요일+교시가 지정된 경우 → "현재 시점에 사용 가능한 방"만 보여주기
@@ -917,7 +981,6 @@ def result():
     )
 
 
-
 # ------------------------
 #  강의실 상세 페이지 (더미)
 # ------------------------
@@ -1024,7 +1087,7 @@ def detail():
             continue
 
         for block in blocks:
-            blk_day = block.get("day")         
+            blk_day = block.get("day")
             periods = block.get("periods", [])
 
             # 선택한 요일만 반영
@@ -1110,7 +1173,7 @@ def detail():
         }
         timetable.append(row_data)
 
-            # 5-1) 오늘 기준 "비는 시간" 요약 텍스트 만들기
+        # 5-1) 오늘 기준 "비는 시간" 요약 텍스트 만들기
         if not has_classes_today:
             # 오늘 수업이 아예 없으면 고정으로 09~18
             free_time_text = "09:00 ~ 18:00"
@@ -1184,20 +1247,14 @@ def detail():
         timetable=timetable,
         notice_text=notice_text,
         recommendations=recommend_list,
-        day=day,            
+        day=day,
         free_time_text=free_time_text,
     )
 
 
-
-
-# ------------------------
-#  즐겨찾기 페이지 (더미)
-# ------------------------
 @app.route("/favorite")
 def favorite():
     return render_template("favorite.html")
-
 
 
 @app.route("/api/favorite", methods=["POST"])
@@ -1224,9 +1281,7 @@ def api_favorite():
 #  실행
 # ------------------------
 if __name__ == "__main__":
-    # debug=True 일 때 reloader 때문에 두 번 실행되는 것을 막으려면,
-    # WERKZEUG_RUN_MAIN 체크해서 "실제 메인 프로세스"에서만 스레드 시작
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
-        start_studyroom_auto_refresh(30)  # ← 여기서 30초로 설정
+        start_studyroom_auto_refresh(30)  
 
     app.run(debug=True)
